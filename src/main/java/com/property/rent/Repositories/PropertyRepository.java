@@ -1,6 +1,6 @@
 package com.property.rent.Repositories;
 
-import com.property.rent.Entities.Property
+import com.property.rent.Entities.Property;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
