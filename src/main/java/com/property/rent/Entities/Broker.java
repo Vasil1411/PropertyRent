@@ -21,12 +21,6 @@ public class Broker {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
-
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
-
     @Column(nullable = false, length = 30)
     private String phone;
 

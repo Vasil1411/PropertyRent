@@ -12,8 +12,6 @@ CREATE TABLE users (
 CREATE TABLE brokers (
                          id BIGSERIAL PRIMARY KEY,
                          user_id BIGINT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-                         first_name VARCHAR(100) NOT NULL,
-                         last_name VARCHAR(100) NOT NULL,
                          phone VARCHAR(50) NOT NULL,
                          agency_name VARCHAR(255),
                          rating NUMERIC(3, 2) DEFAULT 0.0

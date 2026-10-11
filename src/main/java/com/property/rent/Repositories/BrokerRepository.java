@@ -14,8 +14,7 @@ public interface BrokerRepository extends JpaRepository<Broker, Long> {
     Optional<Broker> findByUserId(Long userId);
 
 
-    List<Broker> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
-
-
     List<Broker> findByAgencyNameContainingIgnoreCase(String agencyName);
+
+    boolean existsByUserId(Long userId);
 }
