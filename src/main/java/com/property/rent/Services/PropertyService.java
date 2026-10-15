@@ -15,9 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import jakarta.persistence.criteria.Predicate;
+import java.math.BigDecimal;
+
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +59,7 @@ public class PropertyService {
                 .id(property.getId())
                 .title(property.getTitle())
                 .description(property.getDescription())
+                .amenitiesText(property.getAmenitiesText())
                 .propertyType(property.getPropertyType())
                 .dealType(property.getDealType())
                 .status(property.getStatus())
@@ -82,6 +87,7 @@ public class PropertyService {
                 .broker(broker)
                 .title(request.getTitle())
                 .description(request.getDescription())
+                .amenitiesText(request.getAmenitiesText()) // Поправено от setAmenitiesText на amenitiesText за Builder-а
                 .propertyType(request.getPropertyType())
                 .dealType(request.getDealType())
                 .status(request.getStatus())
@@ -102,11 +108,13 @@ public class PropertyService {
                 try {
                     Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
                     String imageUrl = uploadResult.get("url").toString();
+                    String publicId = uploadResult.get("public_id").toString();
 
                     PropertyImage propertyImage = PropertyImage.builder()
                             .property(property)
                             .imageUrl(imageUrl)
                             .isPrimary(isFirst)
+                            .publicId(publicId)
                             .displayOrder(order++)
                             .build();
 
@@ -143,6 +151,20 @@ public class PropertyService {
             throw new RuntimeException("Нямате права да изтриете този имот");
         }
 
+        // 1. Изтриваме физическите файлове от Cloudinary
+        if (property.getImages() != null && !property.getImages().isEmpty()) {
+            for (PropertyImage img : property.getImages()) {
+                if (img.getPublicId() != null) {
+                    try {
+                        cloudinary.uploader().destroy(img.getPublicId(), ObjectUtils.emptyMap());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Грешка при изтриване на снимка от Cloudinary", e);
+                    }
+                }
+            }
+        }
+
+        // 2. Изтриваме имота от базата (PostgreSQL каскадно ще изтрие записите в property_images)
         propertyRepository.delete(property);
     }
 
@@ -157,6 +179,7 @@ public class PropertyService {
 
         property.setTitle(request.getTitle());
         property.setDescription(request.getDescription());
+        property.setAmenitiesText(request.getAmenitiesText()); // Обновяване на удобствата
         property.setPropertyType(request.getPropertyType());
         property.setDealType(request.getDealType());
         property.setStatus(request.getStatus());
@@ -192,5 +215,33 @@ public class PropertyService {
 
         Property updatedProperty = propertyRepository.save(property);
         return mapToResponse(updatedProperty);
+    }
+
+    public List<PropertyResponse> searchProperties(String city, Property.DealType dealType, BigDecimal minPrice, BigDecimal maxPrice, Integer roomsCount) {
+        List<Property> properties = propertyRepository.findAll((root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (city != null && !city.trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("city")), "%" + city.toLowerCase() + "%"));
+            }
+            if (dealType != null) {
+                predicates.add(cb.equal(root.get("dealType"), dealType));
+            }
+            if (minPrice != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+            }
+            if (maxPrice != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+            if (roomsCount != null) {
+                predicates.add(cb.equal(root.get("roomsCount"), roomsCount));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        });
+
+        return properties.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 }

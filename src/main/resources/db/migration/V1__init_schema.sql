@@ -8,7 +8,6 @@ CREATE TABLE users (
                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-
 CREATE TABLE brokers (
                          id BIGSERIAL PRIMARY KEY,
                          user_id BIGINT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
@@ -22,9 +21,10 @@ CREATE TABLE properties (
                             broker_id BIGINT NOT NULL REFERENCES brokers(id) ON DELETE CASCADE,
                             title VARCHAR(255) NOT NULL,
                             description TEXT,
+                            amenities_text TEXT, -- Свободен текст за удобства/екстри (незадължително)
                             property_type VARCHAR(50) NOT NULL,
                             deal_type VARCHAR(50) NOT NULL,
-                            status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE', -- ACTIVE, RESERVED, SOLD_RENTED
+                            status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE', -- ACTIVE, RESERVED, SOLD, RENTED, INACTIVE
                             price NUMERIC(12, 2) NOT NULL,
                             area_sqm NUMERIC(8, 2) NOT NULL,
                             floor INT,
@@ -39,20 +39,6 @@ CREATE TABLE properties (
                             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-
-CREATE TABLE amenities (
-                           id BIGSERIAL PRIMARY KEY,
-                           name VARCHAR(100) NOT NULL UNIQUE
-);
-
-
-CREATE TABLE property_amenities (
-                                    property_id BIGINT NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
-                                    amenity_id BIGINT NOT NULL REFERENCES amenities(id) ON DELETE CASCADE,
-                                    PRIMARY KEY (property_id, amenity_id)
-);
-
-
 CREATE TABLE property_images (
                                  id BIGSERIAL PRIMARY KEY,
                                  property_id BIGINT NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
@@ -60,7 +46,6 @@ CREATE TABLE property_images (
                                  is_primary BOOLEAN DEFAULT FALSE,
                                  display_order INT DEFAULT 0
 );
-
 
 CREATE TABLE inquiries (
                            id BIGSERIAL PRIMARY KEY,
@@ -71,11 +56,13 @@ CREATE TABLE inquiries (
                            client_email VARCHAR(255) NOT NULL,
                            client_phone VARCHAR(50),
                            message TEXT NOT NULL,
-                           is_read BOOLEAN DEFAULT FALSE,
+                           status VARCHAR(50) NOT NULL DEFAULT 'NEW', -- NEW, READ, CONTACTED, ARCHIVED
                            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- better performance for queries filtering by broker_id and status
+
+
+-- Индекси за бързо търсене и филтриране
 CREATE INDEX idx_properties_city_price ON properties(city, price);
 CREATE INDEX idx_properties_broker_id ON properties(broker_id);
 CREATE INDEX idx_inquiries_property_id ON inquiries(property_id);

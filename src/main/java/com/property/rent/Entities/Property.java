@@ -77,14 +77,9 @@ public class Property {
     @Builder.Default
     private List<PropertyImage> images = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "property_amenities",
-            joinColumns = @JoinColumn(name = "property_id"),
-            inverseJoinColumns = @JoinColumn(name = "amenity_id")
-    )
-    @Builder.Default
-    private Set<Amenity> amenities = new HashSet<>();
+
+    @Column(name = "amenities_text", columnDefinition = "TEXT")
+    private String amenitiesText;
 
     @PrePersist
     protected void onCreate() {

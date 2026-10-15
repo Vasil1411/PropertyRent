@@ -28,9 +28,9 @@ spring:
 
 #  Cloudinary
 cloudinary:
-  cloud-name: YOUR_CLOUD_NAME
-  api-key: YOUR_API_KEY
-  api-secret: YOUR_API_SECRET
+  cloud-name: fovjyezc
+  api-key: 882988918278148
+  api-secret: kiEfE5BRdrKt8KmSQ-EQy6XxSvQ
 
 server:
   port: 8080

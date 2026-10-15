@@ -28,4 +28,7 @@ public class PropertyImage {
 
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
+
+    @Column(name = "public_id")
+    private String publicId;
 }

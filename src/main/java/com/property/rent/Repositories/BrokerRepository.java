@@ -17,4 +17,6 @@ public interface BrokerRepository extends JpaRepository<Broker, Long> {
     List<Broker> findByAgencyNameContainingIgnoreCase(String agencyName);
 
     boolean existsByUserId(Long userId);
+
+    Optional<Broker> findByUserEmail(String email);
 }

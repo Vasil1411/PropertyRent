@@ -42,5 +42,5 @@ public class PropertyRequest {
     private String neighborhood;
     private String address;
 
-    private Set<Long> amenityIds;
+    private String amenitiesText;
 }

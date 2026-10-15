@@ -31,6 +31,7 @@ public class PropertyResponse {
     private String city;
     private String neighborhood;
     private String address;
+    private String amenitiesText;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

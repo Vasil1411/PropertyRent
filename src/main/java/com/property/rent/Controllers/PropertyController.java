@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import com.property.rent.Entities.Property;
+import java.math.BigDecimal;
+
 
 @RestController
 @RequestMapping("/api/properties")
@@ -65,5 +68,17 @@ public class PropertyController {
         String email = authentication.getName();
         PropertyResponse updatedProperty = propertyService.updateProperty(id, email, request, newImages);
         return ResponseEntity.ok(updatedProperty);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PropertyResponse>> searchProperties(
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false)  Property.DealType dealType,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Integer roomsCount) {
+
+        List<PropertyResponse> properties = propertyService.searchProperties(city,dealType, minPrice, maxPrice, roomsCount);
+        return ResponseEntity.ok(properties);
     }
 }
