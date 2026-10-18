@@ -14,28 +14,22 @@ const getMultipartAuthHeaders = (): Record<string, string> => {
 };
 
 // 1. Създаване на имот с качване на снимки (FormData)
-export const createProperty = async (data: PropertyRequest, images?: File[]): Promise<PropertyResponse> => {
-  const formData = new FormData();
-  
-  // Добавяме JSON обекта като blob/string със същия ключ, който очаква бекенда: @RequestPart("property")
-  formData.append('property', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+// src/services/propertyService.ts
+export const createProperty = async (formData: FormData) => {
+  const token = localStorage.getItem('token');
 
-  // Добавяме снимките, ако има такива: @RequestPart("images")
-  if (images && images.length > 0) {
-    images.forEach((image) => {
-      formData.append('images', image);
-    });
-  }
-
-  const response = await fetch(PROPERTY_URL, {
+  const response = await fetch(`${API_BASE_URL}/properties`, {
     method: 'POST',
-    headers: getMultipartAuthHeaders(),
+    headers: {
+      // Слагаме само автентикацията, НО НЕ И 'Content-Type', за да може браузърът да обработи FormData правилно!
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
     body: formData,
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Грешка при създаване на имот');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Грешка при създаване на имота');
   }
 
   return response.json();
